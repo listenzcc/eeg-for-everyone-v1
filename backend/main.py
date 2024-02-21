@@ -18,6 +18,7 @@ Functions:
 # %% ---- 2024-02-21 ------------------------
 # Requirements and constants
 from data import *
+from omegaconf import OmegaConf
 
 
 # %% ---- 2024-02-21 ------------------------
@@ -31,7 +32,9 @@ from data import *
 # %% ---- 2024-02-21 ------------------------
 # Pending
 if __name__ == "__main__":
-    print("Main")
+    backend_root = Path(__file__).parent
+    conf = OmegaConf.load(backend_root.joinpath("conf/default.yaml"))
+    print(conf)
 
 
 # %% ---- 2024-02-21 ------------------------

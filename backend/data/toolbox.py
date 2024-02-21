@@ -1,11 +1,11 @@
 """
-File: __init__.py
+File: toolbox.py
 Author: Chuncheng Zhang
 Date: 2024-02-21
 Copyright & Email: chuncheng.zhang@ia.ac.cn
 
 Purpose:
-    Initialize the data module
+    The tools for data operations.
 
 Functions:
     1. Requirements and constants
@@ -17,17 +17,16 @@ Functions:
 
 # %% ---- 2024-02-21 ------------------------
 # Requirements and constants
-from pathlib import Path
-from datetime import datetime
-
-from loguru import logger
+import hashlib
+from rich import print
 
 
 # %% ---- 2024-02-21 ------------------------
 # Function and class
-
-logger.add(Path(f'log/{datetime.now().strftime("%Y-%m-%d")}.log'))
-logger.debug("Initializing data module")
+def md5_encode(string: str) -> str:
+    hash_object = hashlib.md5(string.encode())
+    md5_hash = hash_object.hexdigest()
+    return md5_hash
 
 
 # %% ---- 2024-02-21 ------------------------
@@ -36,6 +35,10 @@ logger.debug("Initializing data module")
 
 # %% ---- 2024-02-21 ------------------------
 # Pending
+if __name__ == "__main__":
+    string = "Hello, World!"
+    md5 = md5_encode(string)
+    print(f"Md5 encode: {string} -> {md5}")
 
 
 # %% ---- 2024-02-21 ------------------------

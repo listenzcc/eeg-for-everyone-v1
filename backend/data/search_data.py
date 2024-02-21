@@ -1,11 +1,11 @@
 """
-File: __init__.py
+File: search_data.py
 Author: Chuncheng Zhang
 Date: 2024-02-21
 Copyright & Email: chuncheng.zhang@ia.ac.cn
 
 Purpose:
-    Initialize the data module
+    Search available files for EEG data
 
 Functions:
     1. Requirements and constants
@@ -17,17 +17,16 @@ Functions:
 
 # %% ---- 2024-02-21 ------------------------
 # Requirements and constants
-from pathlib import Path
-from datetime import datetime
+import os
 
-from loguru import logger
+from rich import print, inspect
+
+from .toolbox import md5_encode
+from . import logger
 
 
 # %% ---- 2024-02-21 ------------------------
 # Function and class
-
-logger.add(Path(f'log/{datetime.now().strftime("%Y-%m-%d")}.log'))
-logger.debug("Initializing data module")
 
 
 # %% ---- 2024-02-21 ------------------------
