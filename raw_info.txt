@@ -1,0 +1,13 @@
+<Info | 8 non-empty values
+ bads: []
+ ch_names: Fpz, Fp1, Fp2, AF3, AF4, AF7, AF8, Fz, F1, F2, F3, F4, F5, F6, ...
+ chs: 64 EEG
+ custom_ref_applied: False
+ highpass: 0.0 Hz
+ lowpass: 250.0 Hz
+ meas_date: 2023-05-11 21:10:07 UTC
+ nchan: 64
+ projs: []
+ sfreq: 1000.0 Hz
+ subject_info: 4 items (dict)
+>

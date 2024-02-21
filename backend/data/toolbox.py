@@ -18,15 +18,22 @@ Functions:
 # %% ---- 2024-02-21 ------------------------
 # Requirements and constants
 import hashlib
-from rich import print
 
 
 # %% ---- 2024-02-21 ------------------------
 # Function and class
 def md5_encode(string: str) -> str:
+    """
+    Returns the MD5 hash of the given string.
+
+    Args:
+        string (str): The string to be encoded.
+
+    Returns:
+        str: The MD5 hash of the string.
+    """
     hash_object = hashlib.md5(string.encode())
-    md5_hash = hash_object.hexdigest()
-    return md5_hash
+    return hash_object.hexdigest()
 
 
 # %% ---- 2024-02-21 ------------------------

@@ -48,7 +48,7 @@ class Conf(Base, Data):
 # Play ground
 if __name__ == "__main__":
     config = OmegaConf.structured(Conf)
-    print("Configuring: %s" % config)
+    print(f"Configuring: {config}")
     OmegaConf.save(config, root.joinpath("default.yaml"))
 
 # %% ---- 2024-02-21 ------------------------

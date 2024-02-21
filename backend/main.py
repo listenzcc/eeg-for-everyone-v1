@@ -17,8 +17,12 @@ Functions:
 
 # %% ---- 2024-02-21 ------------------------
 # Requirements and constants
-from data import *
+from pathlib import Path
 from omegaconf import OmegaConf
+
+from data.search_data import RawDataFiles
+from data.cache_data import CacheData
+from data.load_raw_data import LoadRawData
 
 
 # %% ---- 2024-02-21 ------------------------
@@ -27,15 +31,21 @@ from omegaconf import OmegaConf
 
 # %% ---- 2024-02-21 ------------------------
 # Play ground
-
-
-# %% ---- 2024-02-21 ------------------------
-# Pending
 if __name__ == "__main__":
     backend_root = Path(__file__).parent
     conf = OmegaConf.load(backend_root.joinpath("conf/default.yaml"))
     print(conf)
 
+    rdf = RawDataFiles(conf.data_folder)
+    for e in rdf.find_all():
+        lrd = LoadRawData(e)
 
 # %% ---- 2024-02-21 ------------------------
 # Pending
+
+
+# %% ---- 2024-02-21 ------------------------
+# Pending
+
+
+# %%
