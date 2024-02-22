@@ -1,11 +1,11 @@
 """
-File: main.py
+File: process_MI_data.py
 Author: Chuncheng Zhang
 Date: 2024-02-21
 Copyright & Email: chuncheng.zhang@ia.ac.cn
 
 Purpose:
-    Amazing things
+    Process the MI data.
 
 Functions:
     1. Requirements and constants
@@ -17,27 +17,26 @@ Functions:
 
 # %% ---- 2024-02-21 ------------------------
 # Requirements and constants
-from pathlib import Path
-from omegaconf import OmegaConf
+import mne
 
-from data.search_data import RawDataFiles
-from data.load_raw_data import LoadRawData
+from . import logger
+from .load_raw_data import LoadRawData
 
 
 # %% ---- 2024-02-21 ------------------------
 # Function and class
+class ProcessMIData(LoadRawData):
+    def __init__(self, file_info: dict, parameters: dict):
+        super().__init__(file_info)
+        self.get_epochs()
+
+    def get_epochs(self):
+        pass
 
 
 # %% ---- 2024-02-21 ------------------------
 # Play ground
-if __name__ == "__main__":
-    backend_root = Path(__file__).parent
-    conf = OmegaConf.load(backend_root.joinpath("conf/default.yaml"))
-    print(conf)
 
-    rdf = RawDataFiles(conf.data_folder)
-    for e in rdf.find_all():
-        lrd = LoadRawData(e)
 
 # %% ---- 2024-02-21 ------------------------
 # Pending
@@ -45,6 +44,3 @@ if __name__ == "__main__":
 
 # %% ---- 2024-02-21 ------------------------
 # Pending
-
-
-# %%
