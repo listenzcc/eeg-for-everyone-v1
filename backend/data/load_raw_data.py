@@ -18,7 +18,6 @@ Functions:
 # %% ---- 2024-02-21 ------------------------
 # Requirements and constants
 import mne
-import json
 
 from . import logger
 from .cache_data import CacheData
@@ -32,6 +31,18 @@ class LoadRawData(CacheData):
         self.load_raw()
         self.standard_montage()
         self.get_events()
+        self.filter_ch_names()
+
+    def filter_ch_names(self):
+        self.ch_names_inside_montage = [
+            e for e in self.raw.ch_names if e in self.montage.ch_names
+        ]
+        self.ch_names_outside_montage = [
+            e for e in self.raw.ch_names if e not in self.montage.ch_names
+        ]
+        logger.debug(
+            f"Filtered ch_names inside: {self.ch_names_inside_montage} outside: {self.ch_names_outside_montage}"
+        )
 
     def load_raw(self):
         """
@@ -74,9 +85,13 @@ class LoadRawData(CacheData):
         self.event_id = event_id
         logger.debug(f"Got events (shape):{events.shape}, event_id: {event_id}")
         fig = mne.viz.plot_events(
-            events, sfreq=self.raw.info["sfreq"], event_id=event_id, show=False
+            events,
+            sfreq=self.raw.info["sfreq"],
+            event_id=event_id,
+            show=False,
         )
-        fig.savefig(self.to_cache("events.jpg"))
+        fig.suptitle("Raw events")
+        fig.savefig(self.to_cache("raw-events.jpg"))
         return events, event_id
 
     def standard_montage(
