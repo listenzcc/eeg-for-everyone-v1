@@ -1,0 +1,14 @@
+{
+    "MI": {
+        "en-us": "MI",
+        "zh-cn": "运动想象"
+    },
+    "RSVP": {
+        "en-us": "RSVP",
+        "zh-cn": "快速序列视觉呈现"
+    },
+    "SSVEP": {
+        "en-us": "SSVEP",
+        "zh-cn": "稳态视觉诱发电位"
+    }
+}
