@@ -18,6 +18,9 @@ Functions:
 
 # %% ---- 2024-04-23 ------------------------
 # Requirements and constants
+import sys
+from PySide6 import QtWidgets
+from qt.data_selection import DataSelectionWindow
 
 
 # %% ---- 2024-04-23 ------------------------
@@ -26,7 +29,13 @@ Functions:
 
 # %% ---- 2024-04-23 ------------------------
 # Play ground
+if __name__ == "__main__":
+    app = QtWidgets.QApplication(sys.argv)
 
+    dsw = DataSelectionWindow()
+    dsw.show()
+
+    app.exec()
 
 # %% ---- 2024-04-23 ------------------------
 # Pending
