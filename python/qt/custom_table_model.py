@@ -25,14 +25,19 @@ from PySide6.QtCore import Qt, QAbstractTableModel, QModelIndex
 
 
 class CustomTableModel(QAbstractTableModel):
-    def __init__(self, df):
+    def __init__(self):
         QAbstractTableModel.__init__(self)
-        self.load_dataFrame(df)
 
-    def load_dataFrame(self, df):
+    def load_dataFrame(self, df, display_columns: list = None):
         self.df = df.copy()
-        self.column_count = len(df.columns)
-        self.row_count = len(df)
+
+        if display_columns is None:
+            self.display_df = df.copy()
+        else:
+            self.display_df = df[display_columns].copy()
+
+        self.column_count = len(self.display_df.columns)
+        self.row_count = len(self.display_df)
 
     def rowCount(self, parent=QModelIndex()):
         return self.row_count
@@ -44,7 +49,7 @@ class CustomTableModel(QAbstractTableModel):
         if role != Qt.DisplayRole:
             return None
         if orientation == Qt.Horizontal:
-            return self.df.columns.tolist()[section]
+            return self.display_df.columns.tolist()[section]
         else:
             return f"{section}"
 
@@ -52,8 +57,8 @@ class CustomTableModel(QAbstractTableModel):
         if role == Qt.DisplayRole:
             column = index.column()
             row = index.row()
-            col = self.df.columns[column]
-            value = self.df.iloc[row][col]
+            col = self.display_df.columns[column]
+            value = self.display_df.iloc[row][col]
             return str(value)
         elif role == Qt.BackgroundRole:
             return QColor(Qt.white)
@@ -70,10 +75,7 @@ class CustomTableModel(QAbstractTableModel):
 
     def on_select(self, selected):
         selected_row = selected.toList()[0].top()
-        se = self.df.iloc[selected_row]
-        print(selected_row)
-        print(se)
-        print(selected.toList())
+        return self.df.iloc[selected_row]
 
 
 # %% ---- 2024-04-25 ------------------------
