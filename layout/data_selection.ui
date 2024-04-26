@@ -6,35 +6,25 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1065</width>
-    <height>594</height>
+    <width>932</width>
+    <height>666</height>
    </rect>
   </property>
   <property name="windowTitle">
    <string>Dialog</string>
   </property>
-  <widget class="QDialogButtonBox" name="buttonBox">
-   <property name="geometry">
-    <rect>
-     <x>930</x>
-     <y>50</y>
-     <width>81</width>
-     <height>241</height>
-    </rect>
-   </property>
-   <property name="orientation">
-    <enum>Qt::Orientation::Vertical</enum>
-   </property>
-   <property name="standardButtons">
-    <set>QDialogButtonBox::StandardButton::Cancel|QDialogButtonBox::StandardButton::Ok</set>
-   </property>
-  </widget>
+  <property name="sizeGripEnabled">
+   <bool>false</bool>
+  </property>
+  <property name="modal">
+   <bool>false</bool>
+  </property>
   <widget class="QScrollArea" name="zcc_scrollArea_detailDisplay">
    <property name="geometry">
     <rect>
-     <x>30</x>
-     <y>330</y>
-     <width>851</width>
+     <x>20</x>
+     <y>370</y>
+     <width>381</width>
      <height>251</height>
     </rect>
    </property>
@@ -46,7 +36,7 @@
      <rect>
       <x>0</x>
       <y>0</y>
-      <width>849</width>
+      <width>379</width>
       <height>249</height>
      </rect>
     </property>
@@ -55,10 +45,10 @@
   <widget class="QTabWidget" name="tabWidget">
    <property name="geometry">
     <rect>
-     <x>30</x>
-     <y>20</y>
-     <width>851</width>
-     <height>301</height>
+     <x>10</x>
+     <y>10</y>
+     <width>821</width>
+     <height>341</height>
     </rect>
    </property>
    <property name="currentIndex">
@@ -71,25 +61,71 @@
     <attribute name="title">
      <string>Valid Data</string>
     </attribute>
-    <widget class="QTableView" name="zcc_tableView_validDataSelection">
+    <widget class="QWidget" name="verticalLayoutWidget">
      <property name="geometry">
       <rect>
        <x>10</x>
        <y>10</y>
-       <width>831</width>
-       <height>221</height>
+       <width>791</width>
+       <height>291</height>
       </rect>
      </property>
-    </widget>
-    <widget class="QLineEdit" name="zcc_lineEdit_pathFilter">
-     <property name="geometry">
-      <rect>
-       <x>730</x>
-       <y>240</y>
-       <width>113</width>
-       <height>21</height>
-      </rect>
-     </property>
+     <layout class="QVBoxLayout" name="verticalLayout">
+      <property name="leftMargin">
+       <number>5</number>
+      </property>
+      <property name="topMargin">
+       <number>5</number>
+      </property>
+      <property name="rightMargin">
+       <number>5</number>
+      </property>
+      <property name="bottomMargin">
+       <number>5</number>
+      </property>
+      <item>
+       <layout class="QHBoxLayout" name="zcc_horizontalLayout_protocolSelection">
+        <item>
+         <widget class="QLabel" name="label_2">
+          <property name="text">
+           <string>Select Protocol:</string>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </item>
+      <item>
+       <widget class="Line" name="line">
+        <property name="orientation">
+         <enum>Qt::Orientation::Horizontal</enum>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <layout class="QHBoxLayout" name="horizontalLayout">
+        <item>
+         <widget class="QLabel" name="label">
+          <property name="text">
+           <string>Path filter:</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QLineEdit" name="zcc_lineEdit_pathFilter"/>
+        </item>
+        <item>
+         <widget class="QLabel" name="zcc_label_totalFiles">
+          <property name="text">
+           <string>Total files: N.A.</string>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </item>
+      <item>
+       <widget class="QTableView" name="zcc_tableView_validDataSelection"/>
+      </item>
+     </layout>
     </widget>
    </widget>
    <widget class="QWidget" name="tab_2">
@@ -120,6 +156,32 @@
      </widget>
     </widget>
    </widget>
+  </widget>
+  <widget class="QDialogButtonBox" name="buttonBox">
+   <property name="geometry">
+    <rect>
+     <x>840</x>
+     <y>30</y>
+     <width>75</width>
+     <height>319</height>
+    </rect>
+   </property>
+   <property name="orientation">
+    <enum>Qt::Orientation::Vertical</enum>
+   </property>
+   <property name="standardButtons">
+    <set>QDialogButtonBox::StandardButton::Cancel|QDialogButtonBox::StandardButton::Ok</set>
+   </property>
+  </widget>
+  <widget class="QListWidget" name="listWidget">
+   <property name="geometry">
+    <rect>
+     <x>405</x>
+     <y>370</y>
+     <width>411</width>
+     <height>251</height>
+    </rect>
+   </property>
   </widget>
  </widget>
  <resources/>

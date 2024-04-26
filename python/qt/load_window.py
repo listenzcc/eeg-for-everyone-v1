@@ -74,7 +74,8 @@ class BaseWindow(object):
             attr = k[len(self.known_object_prefix):]
 
             if not hasattr(self, attr):
-                logger.warning(f'Unknown attribute: {attr}')
+                logger.warning(
+                    f'Unknown attribute (UI has it, but window does not.): {attr}')
 
             self.__setattr__(attr, v)
 
