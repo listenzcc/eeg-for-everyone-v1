@@ -48,6 +48,7 @@ class BaseWindow(object):
     def __init__(self, window: QtWidgets):
         self.window = window
         self._search_children()
+        self._assign_children()
 
     def _search_children(self):
         """
@@ -69,7 +70,7 @@ class BaseWindow(object):
         self.children = children
         return children
 
-    def assign_children(self):
+    def _assign_children(self):
         for k, v in self.children.items():
             attr = k[len(self.known_object_prefix):]
 
