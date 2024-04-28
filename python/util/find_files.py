@@ -21,6 +21,7 @@ Functions:
 import os
 import mne
 import json
+import traceback
 import numpy as np
 import pandas as pd
 
@@ -80,6 +81,10 @@ def parse_as_eeg_file_path(path: Path, folder: Path):
 
     if name == 'data.bdf':
         evt_path = path.parent.joinpath('evt.bdf')
+
+        output = EEG_File(
+            path=path, short_name=short_name, protocol=protocol, format='.bdf')
+
         if evt_path.is_file():
             output = EEG_File(
                 path=path, evt_path=evt_path, short_name=short_name, protocol=protocol, format='.bdf')
@@ -122,30 +127,63 @@ def find_files(folder: Path, limit: int = 1e6) -> list:
 
 
 def format_check(file: pd.Series):
-    obj = RawObject(file)
-    ch_names = obj.raw.info['ch_names']
-    sfreq = obj.raw.info['sfreq']
-    events, event_id = mne.events_from_annotations(obj.raw)
+    """
+    Performs format checks on the provided file and returns the status and checks results.
 
+    Args:
+        file (pd.Series): The file to perform format checks on.
+
+    Returns:
+        dict: A dictionary containing the path of the file and its status along with any checks performed.
+    """
+
+    # obj = RawObject(file)
     output = dict(path=file['path'])
 
-    if file['protocol'] == 'SSVEP':
-        checks = _check_SSVEP(ch_names, sfreq, events, event_id)
+    obj, suspects = _check_basic(file)
 
-        if any(checks.values()):
-            output |= dict(status='failed', checks=checks)
+    if obj is None:
+        output |= dict(status='failed', suspects=suspects)
+        return output
+
+    if file['protocol'] == 'SSVEP':
+        suspects, checks = _check_SSVEP(obj.raw)
+
+        if any(suspects.values()):
+            output |= dict(status='failed', checks=checks, suspects=suspects)
             logger.warning(f'SSVEP checks failed: {output}')
         else:
-            output |= dict(status='passed', checks=checks)
+            output |= dict(status='passed', checks=checks, suspects=suspects)
 
         return output
 
-    output |= dict(status='unchecked')
+    output |= dict(status='unchecked', checks=[], suspects=[])
     return output
 
 
-def _check_SSVEP(ch_names, sfreq, events, event_id):
+def _check_basic(file):
+    suspects = {}
+    obj = None
+
+    try:
+        obj = RawObject(file)
+    except Exception:
+        suspects['traceback'] = [traceback.format_exc()]
+
+    return obj, suspects
+
+
+def _check_SSVEP(raw):
+    # Something I want to know
     checks = dict(
+        channels=[],
+        sfreq=None,
+        event_id={},
+        total_length=None
+    )
+
+    # Something is wrong
+    suspects = dict(
         channels=[],
         sfreq=[],
         n_events=[],
@@ -155,6 +193,14 @@ def _check_SSVEP(ch_names, sfreq, events, event_id):
 
     try:
         # --------------------
+        # Fetch information
+        ch_names = raw.info['ch_names']
+        sfreq = raw.info['sfreq']
+        events, event_id = mne.events_from_annotations(raw)
+
+        checks.update(ch_names=ch_names, sfreq=sfreq, event_id=event_id)
+
+        # --------------------
         # Check channels
         must_ch_names = [
             e.strip().upper()
@@ -163,14 +209,14 @@ def _check_SSVEP(ch_names, sfreq, events, event_id):
 
         for e in must_ch_names:
             if e not in ch_names:
-                checks['channels'].append(
+                suspects['channels'].append(
                     f'The ch_names must contain {e}, which does not'
                 )
 
         # --------------------
         # Check sfreq not be less than 250 Hz
         if sfreq < 250:
-            checks['sfreq'].append(
+            suspects['sfreq'].append(
                 f'The sfreq must not be less than 250 Hz, but the value is {
                     sfreq}'
             )
@@ -179,10 +225,11 @@ def _check_SSVEP(ch_names, sfreq, events, event_id):
         # Check total length not be less than 180 seconds
         total_length = np.max([e[0] for e in events]) / sfreq
         if total_length < 180:
-            checks['total_length'].append(
+            suspects['total_length'].append(
                 f'The total length must not be less than 180 seconds, but the value is {
                     total_length}'
             )
+        checks.update(total_length=total_length)
 
         # --------------------
         # Filter the valid events
@@ -192,7 +239,7 @@ def _check_SSVEP(ch_names, sfreq, events, event_id):
             event_id_inv[e[2]]) > 0 and int(event_id_inv[e[2]]) < 241]
         n_events = {e[2] for e in events}
         if len(n_events) < 10:
-            checks['n_events'].append(
+            suspects['n_events'].append(
                 f'The (1-240) events should be larger than 10 kinds, but the value is {
                     len(n_events)}'
             )
@@ -204,18 +251,17 @@ def _check_SSVEP(ch_names, sfreq, events, event_id):
         gaps = sort[1:] - sort[:-1]
         min_gap = np.min(gaps)
         if min_gap < lower_limit:
-            checks['min_gap'].append(
+            suspects['min_gap'].append(
                 f'The lower limit gap between the events are {
                     lower_limit}({sfreq} Hz), but the value is {min_gap}'
             )
 
     except Exception:
-        import traceback
-        checks['traceback'] = [traceback.format_exc()]
+        suspects['traceback'] = [traceback.format_exc()]
 
     # --------------------
     # No message is good message
-    return checks
+    return suspects, checks
 
 
 # %% ---- 2024-04-23 ------------------------

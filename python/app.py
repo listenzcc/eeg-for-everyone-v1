@@ -20,7 +20,7 @@ Functions:
 # Requirements and constants
 import sys
 from PySide6 import QtWidgets
-from qt.data_selection import DataSelectionWindow
+from qt.window_of_data_selection import DataSelectionWindow
 
 
 # %% ---- 2024-04-23 ------------------------

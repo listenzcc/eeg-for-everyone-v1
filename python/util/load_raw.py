@@ -29,7 +29,6 @@ from . import logger
 class RawObject(object):
     file = None
     raw = None
-    ch_names = None
 
     def __init__(self, file: pd.Series):
         self.file = file
