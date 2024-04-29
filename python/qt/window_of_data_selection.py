@@ -18,15 +18,12 @@ Functions:
 
 # %% ---- 2024-04-25 ------------------------
 # Requirements and constants
-from rich import inspect
-
 import pandas as pd
-from PySide6 import QtCore
 from PySide6.QtUiTools import QUiLoader
-from PySide6.QtWidgets import QRadioButton, QButtonGroup
 
 from .load_window import BaseWindow
 from .custom_table_model import CustomTableModel
+from .window_of_MI import MIWindow
 from . import logger, project_root, cache_path
 
 # --------------------
@@ -39,17 +36,19 @@ loader = QUiLoader()
 def load_files_table(map):
     found_files = pd.read_pickle(cache_path.joinpath('found_files'))
     check_results = pd.read_pickle(cache_path.joinpath('check_results'))
-    df = pd.merge(check_results, found_files, on='path')
 
+    df = pd.merge(check_results, found_files, on='path')
     df = df[df.apply(map, axis=1)]
 
-    logger.debug(f'Loaded files table:\n{df}')
+    logger.debug(f'Loaded files: {len(df)}')
+
     return df
 
 
 class DataSelectionWindow(BaseWindow):
     layout_path = project_root.joinpath('layout/data_selection.ui')
 
+    # --------------------
     # Known components
     # --
     comboBox_protocolSelection = None
@@ -65,11 +64,17 @@ class DataSelectionWindow(BaseWindow):
     # --
     listWidget_failedFiles = None
     textBrowser_failedFiles = None
+    # --
+    tableView_protocolSummary = None
+    # --
+    buttonBox_goToNext = None
 
+    # --------------------
     # The table of found files
     files_table = load_files_table(lambda se: se['status'] != 'failed')
     failed_files_table = load_files_table(lambda se: se['status'] == 'failed')
 
+    # --------------------
     # variables
     protocol = None
     candidate_file = None
@@ -80,6 +85,37 @@ class DataSelectionWindow(BaseWindow):
         super().__init__(loader.load(self.layout_path, None))
         self.connect_choose_file_functions()
         self.setup_protocols()
+        self.update_protocolSummary()
+        self.handle_goToNext_events()
+
+    def handle_goToNext_events(self):
+
+        def _accept():
+            unknown_protocol = True
+
+            if self.protocol == 'MI':
+                window = MIWindow(self.chosen_files, self.window)
+                window.show()
+                unknown_protocol = False
+
+            if unknown_protocol:
+                logger.warning('Not support protocol: {self.protocol}')
+
+        self.buttonBox_goToNext.accepted.connect(_accept)
+
+    def update_protocolSummary(self):
+        df = pd.concat([self.files_table, self.failed_files_table], axis=0)
+        group = df.groupby(['status', 'protocol', 'format'])
+        group = group[['path']]
+        count = group.count()
+
+        # Convert multiple index to columns
+        count = count.reset_index()
+
+        # Put the data frame of the count into the tableView_protocolSummary
+        model = CustomTableModel()
+        model.load_dataFrame(count)
+        model.bind_tableView(self.tableView_protocolSummary)
 
     def setup_protocols(self):
         """
@@ -217,9 +253,11 @@ class DataSelectionWindow(BaseWindow):
 
             df = self.files_table.copy()
             df = df[df['protocol'] == self.protocol]
+            n = len(df)
             df = df[df['path'].map(
                 lambda e: text.upper() in str(e).upper())]
-            self.label_filteredFiles.setText(f'{len(df): 4d}')
+            m = len(df)
+            self.label_filteredFiles.setText(f'{m: 4d} | {n: 4d}')
             self.filtered_files = [dict(se) for i, se in df.iterrows()]
 
             model.load_dataFrame(df, display_columns=display_columns)
@@ -241,7 +279,8 @@ class DataSelectionWindow(BaseWindow):
 
         df = self.files_table.copy()
         df = df[df['protocol'] == self.protocol]
-        self.label_filteredFiles.setText(f'{len(df): 4d}')
+        n = len(df)
+        self.label_filteredFiles.setText(f'{n: 4d} | {n: 4d}')
         self.filtered_files = [dict(se) for i, se in df.iterrows()]
 
         model.load_dataFrame(df, display_columns=display_columns)

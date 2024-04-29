@@ -39,9 +39,9 @@ if __name__ == '__main__':
     df = pd.merge(check_results, found_files, on='path')
     print(df)
 
-    group = df.groupby(['status', 'protocol'])
+    group = df.groupby(['status', 'protocol', 'format'])
+    group = group[['path']]
     print(group.count())
-    print(group.first())
 
 
 # %% ---- 2024-04-23 ------------------------
