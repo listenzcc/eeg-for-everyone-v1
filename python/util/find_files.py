@@ -142,6 +142,7 @@ def format_check(file: pd.Series):
 
     obj, suspects = _check_basic(file)
 
+    # Can not load
     if obj is None:
         output |= dict(status='failed', suspects=suspects)
         return output
@@ -157,6 +158,18 @@ def format_check(file: pd.Series):
 
         return output
 
+    if file['protocol'].startswith('P300'):
+        suspects, checks = _check_P300(obj.raw)
+
+        if any(suspects.values()):
+            output |= dict(status='failed', checks=checks, suspects=suspects)
+            logger.warning(f'P300 checks failed: {output}')
+        else:
+            output |= dict(status='passed', checks=checks, suspects=suspects)
+
+        return output
+
+    # Loaded but not checked
     output |= dict(status='unchecked', checks=[], suspects=[])
     return output
 
@@ -173,10 +186,80 @@ def _check_basic(file):
     return obj, suspects
 
 
+def _check_P300(raw):
+    # Something I want to know
+    checks = dict(
+        ch_names=[],
+        sfreq=None,
+        event_id={},
+        total_length=None
+    )
+
+    # Something is wrong
+    suspects = dict(
+        channels=[],
+        sfreq=[],
+        n_events=[],
+    )
+
+    def _check():
+        # --------------------
+        # Fetch information
+        ch_names = raw.info['ch_names']
+        sfreq = raw.info['sfreq']
+        events, event_id = mne.events_from_annotations(raw)
+        total_length = np.max([e[0] for e in events]) / \
+            sfreq if len(events) > 0 else None
+        checks.update(
+            ch_names=ch_names,
+            sfreq=sfreq,
+            event_id=event_id,
+            total_length=total_length)
+
+        # --------------------
+        # Check channels
+        must_ch_names = [
+            e.strip().upper()
+            for e in 'Fz,F3,F4,Cz,C3,C4,CP1,CP2,CP5,CP6,Pz,P3,P4,P7,P8,POz,PO3,PO4,PO7,PO8,Oz,O1,O2'.split(',') if e.strip()]
+        ch_names = [e.upper() for e in ch_names]
+        for e in [e for e in must_ch_names if e not in ch_names]:
+            suspects['channels'].append(
+                f'The ch_names must contain {e}, which does not'
+            )
+
+        # --------------------
+        # Check sfreq not be less than 250 Hz
+        if sfreq < 250:
+            suspects['sfreq'].append(
+                f'The sfreq must not be less than 250 Hz, but the value is {
+                    sfreq}'
+            )
+
+        # --------------------
+        # Filter the valid events
+        # Check events minimum number not less than 9 kinds
+        event_id_inv = {v: k for k, v in event_id.items()}
+        events = [e for e in events if int(
+            event_id_inv[e[2]]) > 0 and int(event_id_inv[e[2]]) < 100]
+        n_events = {e[2] for e in events}
+        if len(n_events) < 9:
+            suspects['n_events'].append(
+                f'The (1-99) events should be equal or larger than 9 kinds, but the value is {
+                    len(n_events)}'
+            )
+
+    try:
+        _check()
+    except Exception:
+        suspects['traceback'] = [traceback.format_exc()]
+
+    return suspects, checks
+
+
 def _check_SSVEP(raw):
     # Something I want to know
     checks = dict(
-        channels=[],
+        ch_names=[],
         sfreq=None,
         event_id={},
         total_length=None
@@ -191,7 +274,7 @@ def _check_SSVEP(raw):
         min_gap=[],
     )
 
-    try:
+    def _check():
         # --------------------
         # Fetch information
         ch_names = raw.info['ch_names']
@@ -207,11 +290,10 @@ def _check_SSVEP(raw):
             for e in 'PO3,PO5,POz,PO4,PO6,O1,Oz,O2'.split(',') if e.strip()]
         ch_names = [e.upper() for e in ch_names]
 
-        for e in must_ch_names:
-            if e not in ch_names:
-                suspects['channels'].append(
-                    f'The ch_names must contain {e}, which does not'
-                )
+        for e in [e for e in must_ch_names if e not in ch_names]:
+            suspects['channels'].append(
+                f'The ch_names must contain {e}, which does not'
+            )
 
         # --------------------
         # Check sfreq not be less than 250 Hz
@@ -240,7 +322,7 @@ def _check_SSVEP(raw):
         n_events = {e[2] for e in events}
         if len(n_events) < 10:
             suspects['n_events'].append(
-                f'The (1-240) events should be larger than 10 kinds, but the value is {
+                f'The (1-240) events should be equal or larger than 10 kinds, but the value is {
                     len(n_events)}'
             )
 
@@ -256,6 +338,8 @@ def _check_SSVEP(raw):
                     lower_limit}({sfreq} Hz), but the value is {min_gap}'
             )
 
+    try:
+        _check()
     except Exception:
         suspects['traceback'] = [traceback.format_exc()]
 

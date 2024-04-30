@@ -1,5 +1,5 @@
 """
-File: check-format.py
+File: find-files-with-format-check.py
 Author: Chuncheng Zhang
 Date: 2024-04-23
 Copyright & Email: chuncheng.zhang@ia.ac.cn
@@ -18,9 +18,12 @@ Functions:
 
 # %% ---- 2024-04-23 ------------------------
 # Requirements and constants
+import json
+import time
 import pandas as pd
 
 from pathlib import Path
+from datetime import datetime
 from tqdm.auto import tqdm
 
 from util import logger, cache_path
@@ -37,6 +40,8 @@ if __name__ == '__main__':
     folders = [
         Path('D://脑机接口专项')
     ]
+
+    tic = time.time()
 
     # --------------------
     dfs = []
@@ -62,6 +67,14 @@ if __name__ == '__main__':
     # --------------------
     found_files.to_pickle(cache_path.joinpath('found_files'))
     check_results.to_pickle(cache_path.joinpath('check_results'))
+
+    passed = time.time() - tic
+    checks_info = dict(
+        date=f'{datetime.now()}',
+        cost=f'{passed:.2f} seconds'
+    )
+    json.dump(checks_info, open(
+        cache_path.joinpath('latest_check_info.json'), 'w'))
 
 
 # %% ---- 2024-04-23 ------------------------

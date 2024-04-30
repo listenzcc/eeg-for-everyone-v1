@@ -1,5 +1,5 @@
 """
-File: load-checks.py
+File: check-check-results.py
 Author: Chuncheng Zhang
 Date: 2024-04-23
 Copyright & Email: chuncheng.zhang@ia.ac.cn
