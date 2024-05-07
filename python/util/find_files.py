@@ -280,8 +280,14 @@ def _check_SSVEP(raw):
         ch_names = raw.info['ch_names']
         sfreq = raw.info['sfreq']
         events, event_id = mne.events_from_annotations(raw)
+        total_length = np.max([e[0] for e in events]) / \
+            sfreq if len(events) > 0 else None
 
-        checks.update(ch_names=ch_names, sfreq=sfreq, event_id=event_id)
+        checks.update(
+            ch_names=ch_names,
+            sfreq=sfreq,
+            event_id=event_id,
+            total_length=total_length)
 
         # --------------------
         # Check channels
@@ -305,13 +311,11 @@ def _check_SSVEP(raw):
 
         # --------------------
         # Check total length not be less than 180 seconds
-        total_length = np.max([e[0] for e in events]) / sfreq
-        if total_length < 180:
+        if total_length is None or total_length < 180:
             suspects['total_length'].append(
                 f'The total length must not be less than 180 seconds, but the value is {
                     total_length}'
             )
-        checks.update(total_length=total_length)
 
         # --------------------
         # Filter the valid events
