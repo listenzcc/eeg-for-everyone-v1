@@ -21,7 +21,7 @@ Functions:
 import pandas as pd
 from PySide6.QtUiTools import QUiLoader
 
-from .load_window import BaseWindow
+from .base_window import BaseWindow
 from .custom_table_model import CustomTableModel
 from .window_of_MI import MIWindow
 from . import logger, project_root, cache_path

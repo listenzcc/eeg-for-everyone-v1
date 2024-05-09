@@ -1,11 +1,15 @@
 """
-File: load_window.py
+File: base_window.py
 Author: Chuncheng Zhang
 Date: 2024-04-25
 Copyright & Email: chuncheng.zhang@ia.ac.cn
 
 Purpose:
-    Load the window and find its components
+    The base class of UI window.
+    It automatically loads the window and find its components.
+    The components whose objectName starts with known_component_prefix are marked as the components.
+
+    ! It raises the warnings when the UI window has something but the widget does not.
 
 Functions:
     1. Requirements and constants
@@ -21,6 +25,9 @@ Functions:
 from PySide6 import QtCore, QtWidgets
 
 from . import logger
+
+# --------------------
+known_component_prefix = 'zcc_'
 
 # %% ---- 2024-04-25 ------------------------
 # Function and class
@@ -43,12 +50,19 @@ class BaseWindow(object):
 
     window = None
     children = None
-    known_object_prefix = 'zcc_'
+    known_component_prefix = known_component_prefix
 
     def __init__(self, window: QtWidgets):
         self.window = window
         self._search_children()
         self._assign_children()
+        self._set_window_title()
+
+    def _set_window_title(self, title: str = None):
+        if title is None:
+            title = '脑机接口专项'
+        self.window.setWindowTitle(title)
+        logger.debug(f'Set window title: {title}')
 
     def _search_children(self):
         """
@@ -64,7 +78,7 @@ class BaseWindow(object):
         ))
         children = {
             e.objectName(): e for e in raw
-            if e.objectName().startswith(self.known_object_prefix)
+            if e.objectName().startswith(self.known_component_prefix)
         }
         logger.debug(f'Found children: {children}')
         self.children = children
@@ -72,7 +86,7 @@ class BaseWindow(object):
 
     def _assign_children(self):
         for k, v in self.children.items():
-            attr = k[len(self.known_object_prefix):]
+            attr = k[len(self.known_component_prefix):]
 
             if not hasattr(self, attr):
                 logger.warning(
