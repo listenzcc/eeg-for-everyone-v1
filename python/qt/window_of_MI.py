@@ -18,20 +18,24 @@ Functions:
 
 # %% ---- 2024-04-29 ------------------------
 # Requirements and constants
-import json
 from PySide6.QtUiTools import QUiLoader
 
-from .load_window import BaseWindow
+from .base_window import BaseWindow
+from .base_protocol_window import BaseProtocolWindow
 from . import logger, project_root, cache_path
 
 # --------------------
 loader = QUiLoader()
+layout_path = project_root.joinpath('layout/MI.ui')
 
 # %% ---- 2024-04-29 ------------------------
 # Function and class
 
 
 class MIDefaultOptions:
+    """
+    The attributes are type specific
+    """
     channels = ['C3', 'CZ', 'C4']
     eventIds = ['200', '201', '202']
     epochTimes = dict(tmin=-1.0, tmax=5.0)
@@ -40,15 +44,9 @@ class MIDefaultOptions:
     epochsKwargs = dict(baseline=(None, 0), decim=10)
 
 
-class MIWindow(BaseWindow):
-    layout_path = project_root.joinpath('layout/MI.ui')
-
+class MIWindow(BaseProtocolWindow):
     # --------------------
     # Known components
-    # --
-    listWidget_chosenFiles = None
-    listWidget_analysisOptions = None
-
     # --
     plainTextEdit_eventIds = None
     plainTextEdit_epochTimes = None
@@ -57,25 +55,33 @@ class MIWindow(BaseWindow):
     plainTextEdit_rejects = None
     plainTextEdit_epochsKwargs = None
 
-    # --
-    pushButton_useDefault = None
-
     # --------------------
     # variables
     protocol = 'MI'
-    chosen_files = []
-    option_plainTextEdits = {}
-    options = {}
 
     def __init__(self, files: list, parent=None):
-        super().__init__(loader.load(self.layout_path, parent))
-        self.chosen_files = files
-        self.set_options()
-        self.load_default()
-        self.handle_useDefault_event()
-        logger.debug(f'Initialized MI window for {files}')
+        # Initialize BaseProtocolWindow
+        super().__init__(
+            layout_path=layout_path,
+            files=files,
+            ClassOfDefaultOptions=MIDefaultOptions,
+            parent=parent)
 
-    def set_options(self):
+        self.bind_options_with_textEdits()
+        self.load_default_operations()
+
+        self.set_protocol_slogan('Motion imaging experiment')
+        self._set_window_title('Motion imaging experiment')
+
+        logger.info('Initialized MIWindow')
+
+    def bind_options_with_textEdits(self):
+        """
+        Bind the options with their names
+        It assign the textEdits for every options.
+
+        ! Its keys should be exactly the same as the attrs of the MIDefaultOptions.
+        """
         self.option_plainTextEdits = dict(
             eventIds=self.plainTextEdit_eventIds,
             epochTimes=self.plainTextEdit_epochTimes,
@@ -86,63 +92,6 @@ class MIWindow(BaseWindow):
         )
         logger.debug(
             f'Set option plainTextEdits: {self.option_plainTextEdits}')
-
-    def handle_useDefault_event(self):
-        def on_click():
-            self.load_default()
-
-        self.pushButton_useDefault.clicked.connect(on_click)
-
-    def load_default(self):
-        # --------------------
-        self.listWidget_chosenFiles.clear()
-        n = len(self.chosen_files)
-        self.listWidget_chosenFiles.addItems(
-            [
-                f"{i + 1} | {n}: {e['path'].as_posix()}"
-                for i, e in enumerate(self.chosen_files)
-            ]
-        )
-        logger.debug('Filled listWidget_chosenFiles')
-
-        # --------------------
-        default_options = MIDefaultOptions()
-
-        def option_changed():
-            for k, v in self.option_plainTextEdits.items():
-                _type = type(default_options.__getattribute__(k))
-                _type_name = str(_type).split('\'')[1]
-                _text = v.toPlainText()
-
-                option = None
-                try:
-                    cmd = f'{_type_name}({_text})'
-                    option = eval(cmd)
-                except Exception:
-                    logger.warning(f'Failed convert to {_type}: {_text}')
-
-                if option is None:
-                    v.setStyleSheet('color:red;')
-                else:
-                    v.setStyleSheet('color:black;')
-
-                self.options[k] = option
-
-            self.listWidget_analysisOptions.clear()
-            self.listWidget_analysisOptions.addItems(
-                [f'{v}:\t{k}' for v, k in self.options.items()]
-            )
-
-            logger.debug(f'Changed options: {self.options}')
-
-        for attr in [e for e in dir(default_options) if not e.startswith('_')]:
-            value = default_options.__getattribute__(attr)
-            self.option_plainTextEdits[attr].setPlainText(f'{value}')
-            self.option_plainTextEdits[attr].textChanged.disconnect()
-            self.option_plainTextEdits[attr].textChanged.connect(
-                option_changed)
-            logger.debug(f'Set {attr} to {value}')
-        option_changed()
 
 
 # %% ---- 2024-04-29 ------------------------

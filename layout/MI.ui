@@ -333,7 +333,7 @@
      <number>5</number>
     </property>
     <item>
-     <widget class="QLabel" name="label">
+     <widget class="QLabel" name="zcc_label_protocolSlogan">
       <property name="text">
        <string>MI protocol: Motion imaging </string>
       </property>
